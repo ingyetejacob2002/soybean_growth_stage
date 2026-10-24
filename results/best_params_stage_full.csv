@@ -1,0 +1,12 @@
+held_out_site,Decision Tree,Random Forest,SVM (RBF),k-NN,Naive Bayes,MLP,Gradient Boosting
+AR_2017,"{""max_depth"": null}","{""max_depth"": null}","{""m__C"": 10}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64, 32]}","{""learning_rate"": 0.1}"
+AR_2018,"{""max_depth"": 10}","{""max_depth"": 10}","{""m__C"": 100}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64, 32]}","{""learning_rate"": 0.1}"
+MN_2017,"{""max_depth"": null}","{""max_depth"": 10}","{""m__C"": 10}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64, 32]}","{""learning_rate"": 0.05}"
+MN_2018,"{""max_depth"": null}","{""max_depth"": null}","{""m__C"": 10}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64, 32]}","{""learning_rate"": 0.05}"
+OH_2017,"{""max_depth"": 10}","{""max_depth"": null}","{""m__C"": 100}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64]}","{""learning_rate"": 0.05}"
+OH_2018,"{""max_depth"": null}","{""max_depth"": null}","{""m__C"": 10}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64]}","{""learning_rate"": 0.05}"
+VA_2017,"{""max_depth"": null}","{""max_depth"": null}","{""m__C"": 1}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64, 32]}","{""learning_rate"": 0.1}"
+VA_2018_DC,"{""max_depth"": null}","{""max_depth"": null}","{""m__C"": 10}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64, 32]}","{""learning_rate"": 0.05}"
+VA_2018_FS,"{""max_depth"": 10}","{""max_depth"": null}","{""m__C"": 1}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64, 32]}","{""learning_rate"": 0.05}"
+WI_2017,"{""max_depth"": 10}","{""max_depth"": 10}","{""m__C"": 10}","{""m__n_neighbors"": 5}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64]}","{""learning_rate"": 0.05}"
+WI_2018,"{""max_depth"": 10}","{""max_depth"": null}","{""m__C"": 10}","{""m__n_neighbors"": 31}","{""m__var_smoothing"": 0.001}","{""m__hidden_layer_sizes"": [64, 32]}","{""learning_rate"": 0.1}"

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soybean Growth Stage Classifier</title>
+<style>
+  :root{
+    --g:#2e7d32; --g2:#1f5c24; --gl:#e8f5e9; --gm:#c8e6c9; --ink:#1b2a1e; --mut:#5a6b5e; --line:#d6e2d8;
+    --bg:#f4f8f4; --card:#fff; --warn:#7a4f00; --warnbg:#fff3d0; --err:#a12622; --errbg:#fde8e7;
+    --hi:#2e9d4a; --mid:#e0a526; --lo:#d4533f; --r:14px; --shadow:0 2px 10px rgba(30,70,35,.08);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:70px}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  img{max-width:100%;display:block}
+  a{color:var(--g)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .brand{font-weight:800;color:var(--g2);text-decoration:none;display:flex;align-items:center;gap:8px}
+  .brand span{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--g);color:#fff;font-size:16px}
+  nav ul{list-style:none;display:flex;gap:6px;margin:0;padding:0}
+  nav ul a{display:block;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--ink);font-weight:600;font-size:.95rem}
+  nav ul a:hover{background:var(--gl)}
+
+  /* hero */
+  .hero{background:linear-gradient(160deg,#1f5c24 0%,#2e7d32 55%,#4c9a4f 100%);color:#fff;padding:42px 0 30px}
+  .hero h1{margin:0 0 8px;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.15}
+  .hero p.lead{margin:0 0 22px;max-width:640px;font-size:1.08rem;opacity:.95}
+  .cta{display:inline-block;background:#fff;color:var(--g2);font-weight:700;padding:11px 22px;border-radius:10px;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+  .cta:hover{background:#f1fbf1}
+  .journey{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:30px}
+  .jcard{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:var(--r);padding:8px;text-decoration:none;color:#fff;text-align:center;position:relative;transition:transform .15s,background .15s}
+  .jcard:hover{transform:translateY(-4px);background:rgba(255,255,255,.2)}
+  .jcard img{border-radius:10px;aspect-ratio:300/340;object-fit:cover;width:100%}
+  .jcard b{display:block;margin-top:6px;font-size:.98rem}
+  .jcard small{opacity:.88}
+  .jcard:not(:last-child)::after{content:"\203A";position:absolute;right:-11px;top:42%;font-size:1.7rem;color:#fff;opacity:.85;z-index:2}
+
+  section{padding:36px 0}
+  h2{margin:0 0 6px;font-size:1.6rem;color:var(--g2)}
+  .sub{margin:0 0 20px;color:var(--mut)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px}
+
+  /* form */
+  .cols{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:start}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  label{display:block;font-weight:700;font-size:.92rem;margin-bottom:4px}
+  label small{display:block;font-weight:400;color:var(--mut);margin-top:2px}
+  input{width:100%;padding:10px 11px;border:1.5px solid #b8c9bb;border-radius:9px;font-size:1rem;background:#fff;color:var(--ink)}
+  input:focus{outline:3px solid #a5d6a7;border-color:var(--g)}
+  .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;align-items:center}
+  button,.btn{border:0;border-radius:9px;padding:11px 20px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit}
+  .primary{background:var(--g);color:#fff} .primary:hover{background:var(--g2)} .primary:disabled{opacity:.7;cursor:wait}
+  .ghost{background:var(--gl);color:var(--g2)} .ghost:hover{background:var(--gm)}
+  .tips h3{margin:12px 0 4px;font-size:1rem} .tips ol,.tips ul{margin:4px 0 0 18px;padding:0;color:var(--mut);font-size:.93rem}
+  .tips img{border-radius:12px;border:1px solid var(--line)}
+  .err{background:var(--errbg);color:var(--err);border-radius:10px;padding:12px 16px;margin-bottom:18px}
+  .err ul{margin:4px 0 0 18px;padding:0}
+
+  /* result */
+  #result{scroll-margin-top:70px}
+  .res{display:grid;grid-template-columns:minmax(220px,330px) 1fr;gap:26px;align-items:start}
+  .res .photo{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
+  .eyebrow{font-size:.85rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+  .res h3{margin:2px 0 4px;font-size:2rem;color:var(--g2)} .res .stg{font-weight:700;color:var(--g)}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+  .chip{display:flex;align-items:center;gap:9px;background:var(--gl);border-radius:12px;padding:6px 12px 6px 6px;font-size:.92rem}
+  .chip img{width:42px;height:48px;object-fit:cover;border-radius:8px}
+  .chip b{display:block;line-height:1.2}
+  .chip.dash{background:#fff;border:2px dashed var(--g)}
+  .check{list-style:none;margin:8px 0 0;padding:0} .check li{padding:4px 0 4px 28px;position:relative}
+  .check li::before{content:"\2714";position:absolute;left:0;top:3px;width:20px;height:20px;border-radius:50%;background:var(--g);color:#fff;font-size:.7rem;display:grid;place-items:center}
+  .warn{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:11px 15px;margin:12px 0}
+  .bar{height:12px;border-radius:99px;background:#e4ece5;overflow:hidden;margin:6px 0 2px}
+  .bar i{display:block;height:100%;border-radius:99px}
+  .hi{background:var(--hi)} .mid{background:var(--mid)} .lo{background:var(--lo)}
+  .prog{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:22px}
+  .pstep{text-align:center;font-size:.8rem;color:var(--mut);opacity:.6;transition:opacity .2s}
+  .pstep img{border-radius:9px;aspect-ratio:300/340;object-fit:cover;width:100%;border:2px solid transparent}
+  .pstep.done{opacity:.9} .pstep.now{opacity:1;color:var(--g2);font-weight:800}
+  .pstep.now img{border-color:var(--g);box-shadow:0 0 0 3px var(--gm)}
+  .pstep.second img{border:2px dashed var(--g)}
+  .pstep span{display:block;margin-top:4px}
+  .meta{display:flex;flex-wrap:wrap;gap:22px;margin:12px 0;color:var(--mut);font-size:.93rem} .meta b{color:var(--ink);font-size:1.15rem;display:block}
+  .note{color:var(--mut);font-size:.9rem}
+
+  /* guide */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  .fbtn{background:#fff;border:1.5px solid var(--line);color:var(--ink);padding:8px 16px;border-radius:99px;font-weight:700;font-size:.9rem}
+  .fbtn.on{background:var(--g);border-color:var(--g);color:#fff}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:18px}
+  .scard{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:transform .15s}
+  .scard:hover{transform:translateY(-3px)}
+  .scard img{width:100%;aspect-ratio:300/340;object-fit:cover}
+  .scard .body{padding:13px 15px 16px}
+  .scard h4{margin:0;font-size:1.05rem} .scard .grp{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--g);background:var(--gl);padding:2px 9px;border-radius:99px;margin-bottom:6px}
+  .scard p{margin:6px 0;font-size:.9rem;color:var(--mut)}
+  .scard ul{margin:6px 0 0 17px;padding:0;font-size:.88rem}
+  .scard.hide{display:none}
+
+  /* about */
+  .rel{display:grid;grid-template-columns:110px 1fr 50px;gap:10px;align-items:center;margin:8px 0;font-size:.93rem}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .about ul{margin:6px 0 0 18px;padding:0;color:var(--mut)}
+  code{background:#eef3ee;padding:1px 6px;border-radius:5px;font-size:.88em}
+  footer{background:#17331b;color:#cfe3d1;padding:26px 0;text-align:center;font-size:.88rem}
+  footer a{color:#a5d6a7}
+
+  @media(max-width:860px){
+    .cols,.res,.two{grid-template-columns:1fr}
+    .journey{grid-template-columns:repeat(5,minmax(112px,1fr));overflow-x:auto;padding-bottom:6px}
+    .res .photo{max-width:340px}
+  }
+  @media(max-width:560px){.grid{grid-template-columns:1fr} nav ul a{padding:8px 8px;font-size:.88rem} .rel{grid-template-columns:90px 1fr 42px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><span>&#127793;</span> Soybean Stage Classifier</a>
+    <ul>
+      <li><a href="#classify">Classify</a></li>
+      <li><a href="#guide">Stage guide</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <h1>What growth stage is your soybean field in?</h1>
+    <p class="lead">Enter your planting date, location, variety and a quick node count. The model places your field in one of five growth-stage groups and shows you what that stage looks like.</p>
+    <a class="cta" href="#classify">Classify my field</a>
+    <div class="journey">
+      {% for g in groups %}
+      <a class="jcard" href="#guide" data-jump="{{ g }}">
+        <img src="{{ url_for('art', key=group_key[g]) }}" alt="Soybean plant in the {{ g|lower }} stage group" loading="lazy">
+        <b>{{ g }}</b><small>{{ group_info[g].stages }}</small>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="classify">
+  <div class="wrap">
+    <h2>Classify a field</h2>
+    <p class="sub">Fill in the six details below. All of them are needed for a prediction.</p>
+
+    {% if errors %}
+    <div class="err" role="alert"><strong>Please fix the following:</strong><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+    {% endif %}
+
+    {% if result %}
+    <div class="card" id="result" style="margin-bottom:22px">
+      <div class="res">
+        <div>
+          <div class="photo"><img src="{{ url_for('art', key=result.group_key) }}" alt="Soybean plant in the {{ result.stage_group|lower }} stage group"></div>
+        </div>
+        <div>
+          <div class="eyebrow">Predicted stage group</div>
+          <h3>{{ result.stage_group }}</h3>
+          <div class="stg">{{ group_info[result.stage_group].stages }} &middot; {{ result.description.split('(')[0]|trim }}</div>
+          <p>{{ group_info[result.stage_group].blurb }}</p>
+
+          <div class="meta">
+            <div><b>{{ result.features_used.dap }}</b>days after planting</div>
+            <div><b>{{ '%.1f'|format(result.features_used.nodes_per_plant) }}</b>nodes per plant</div>
+            <div><b>{{ '%.2f'|format(result.features_used.nodes_per_dap) }}</b>nodes per day</div>
+          </div>
+
+          <strong>What to look for in the field</strong>
+          <ul class="check">{% for t in group_info[result.stage_group].look_for %}<li>{{ t }}</li>{% endfor %}</ul>
+
+          {% for w in result.warnings %}<div class="warn"><strong>Caution:</strong> {{ w }}</div>{% endfor %}
+
+          {% set f = result.f1_for_group %}
+          <div style="margin-top:16px"><strong>How reliable is this group?</strong>
+            <div class="bar" aria-hidden="true"><i class="{{ 'hi' if f >= 0.8 else 'mid' if f >= 0.6 else 'lo' }}" style="width:{{ (f*100)|round|int }}%"></i></div>
+            <span class="note">Score {{ '%.2f'|format(f) }} out of 1 on fields the model had never seen.
+              {% if f < 0.6 %}This group is one of the harder ones to separate from its neighbours, so confirm in the field.{% elif f < 0.8 %}Reasonably reliable, but check against the field signs above.{% else %}This group is identified very reliably.{% endif %}</span>
+          </div>
+
+          <div class="chips">
+            <div class="chip dash"><img src="{{ url_for('art', key=result.second_key) }}" alt=""><div><b>Second most likely</b>{{ result.second_choice }}</div></div>
+            {% if result.next_group %}
+            <div class="chip"><img src="{{ url_for('art', key=result.next_key) }}" alt=""><div><b>Coming next</b>{{ result.next_group }} ({{ group_info[result.next_group].stages }})</div></div>
+            {% else %}
+            <div class="chip"><div><b>Final stage</b>Harvest comes after a few dry days</div></div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="prog" aria-label="Position in the season">
+        {% for g in groups %}
+        <div class="pstep {{ 'done' if loop.index0 < result.index else '' }} {{ 'now' if g == result.stage_group else '' }} {{ 'second' if g == result.second_choice else '' }}">
+          <img src="{{ url_for('art', key=group_key[g]) }}" alt="{{ g }} stage" loading="lazy"><span>{{ g }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="cols">
+      <div class="card">
+        <form method="post" action="/#result" id="form">
+          <div class="grid">
+            <div><label for="planting_date">Planting date</label>
+              <input type="date" id="planting_date" name="planting_date" value="{{ form.get('planting_date','') }}" required></div>
+            <div><label for="observation_date">Observation date<small>The day you counted the nodes</small></label>
+              <input type="date" id="observation_date" name="observation_date" value="{{ form.get('observation_date','') }}" required></div>
+            <div><label for="latitude">Latitude<small>Decimal degrees, north is positive</small></label>
+              <input type="number" step="any" id="latitude" name="latitude" value="{{ form.get('latitude','') }}" placeholder="e.g. 45.0" required></div>
+            <div><label for="longitude">Longitude<small>Decimal degrees, west is negative</small></label>
+              <input type="number" step="any" id="longitude" name="longitude" value="{{ form.get('longitude','') }}" placeholder="e.g. -93.0" required></div>
+            <div><label for="maturity_group">Maturity group<small>From the seed supplier, e.g. 1.5</small></label>
+              <input type="number" step="any" id="maturity_group" name="maturity_group" value="{{ form.get('maturity_group','') }}" required></div>
+            <div><label for="nodes_per_plant">Nodes per plant<small>Average over 3 plants (see the guide)</small></label>
+              <input type="number" step="any" id="nodes_per_plant" name="nodes_per_plant" value="{{ form.get('nodes_per_plant','') }}" required></div>
+          </div>
+          <div class="row">
+            <button class="primary" type="submit" id="go">Predict growth stage</button>
+            <button class="ghost" type="button" id="btn-loc">Use my location</button>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <span class="note">Try an example:</span>
+            <button class="ghost" type="button" id="ex-us">US field</button>
+            <button class="ghost" type="button" id="ex-ng">Makurdi field</button>
+          </div>
+        </form>
+      </div>
+
+      <aside class="card tips">
+        <img src="{{ url_for('art', key='nodes') }}" alt="Diagram of a soybean stem with five numbered nodes">
+        <h3>How to count nodes</h3>
+        <ol>
+          <li>Pick 3 plants that look typical for the field.</li>
+          <li>On each plant, count the nodes on the main stem. A node is where a leaf joins the stem.</li>
+          <li>Add the three counts, divide by 3, and enter the average.</li>
+        </ol>
+        <h3>Good to know</h3>
+        <ul>
+          <li>Coordinates are needed because temperature and day length change with location.</li>
+          <li>The Makurdi example shows the caution message you get outside the area the model was trained on.</li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section id="guide" style="background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <h2>Stage guide</h2>
+    <p class="sub">The 12 stages of the Fehr and Caviness system, grouped the way the model reports them. Drawings are illustrative.</p>
+    <div class="filters" id="filters">
+      <button class="fbtn on" data-f="all">All stages</button>
+      {% for g in groups %}<button class="fbtn" data-f="{{ g }}">{{ g }}</button>{% endfor %}
+    </div>
+    <div class="gallery">
+      {% for s in stages %}
+      <article class="scard" data-group="{{ s.group }}">
+        <img src="{{ url_for('art', key=s.key) }}" alt="Soybean plant at stage {{ s.code }}, {{ s.name }}" loading="lazy">
+        <div class="body">
+          <span class="grp">{{ s.group }}</span>
+          <h4>{{ s.code }} &middot; {{ s.name }}</h4>
+          <p>{{ s.definition }}</p>
+          <ul>{% for t in s.look_for %}<li>{{ t }}</li>{% endfor %}</ul>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="about" class="about">
+  <div class="wrap">
+    <h2>About the model</h2>
+    <p class="sub">A research prototype for a final-year project. Please read the limits before relying on a result.</p>
+    <div class="two">
+      <div class="card">
+        <strong>How well does it work?</strong>
+        <p class="note">A Support Vector Machine, tested only on field-seasons it had never seen: {{ '%.0f'|format(perf.accuracy*100) }}% accuracy
+          (macro-F1 {{ '%.2f'|format(perf.macro_f1) }}), against {{ '%.0f'|format(perf.majority_class_accuracy*100) }}% for always guessing the most common group.</p>
+        {% for g in groups %}{% set f = per_class[g]['f1-score'] %}
+        <div class="rel"><span>{{ g }}</span><div class="bar"><i class="{{ 'hi' if f >= 0.8 else 'mid' if f >= 0.6 else 'lo' }}" style="width:{{ (f*100)|round|int }}%"></i></div><b>{{ '%.2f'|format(f) }}</b></div>
+        {% endfor %}
+        <p class="note">Bars show the F1 score for each group. Flowering and Pod are the hardest to tell apart.</p>
+      </div>
+      <div class="card">
+        <strong>Limits</strong>
+        <ul>
+          <li>Trained on soybean trials from Arkansas, Minnesota, Ohio, Virginia and Wisconsin in 2017 and 2018. It has not been validated in Nigeria.</li>
+          <li>It predicts five stage groups, not the individual stages.</li>
+          <li>It does not use weather, which also affects how fast soybean develops.</li>
+          <li>Treat results as an estimate and confirm with the field signs in the guide.</li>
+        </ul>
+        <p class="note" style="margin-top:14px"><strong>Using your own photos:</strong> create a folder named <code>photos</code> beside <code>app.py</code> and add files named
+          <code>ve</code>, <code>vc</code>, <code>v1</code>, <code>vn</code>, <code>r1</code> to <code>r8</code> (.jpg, .png or .webp). They replace the drawings automatically.
+          {% set n = has_photos.values()|select|list|length %}{% if n %}Currently using {{ n }} of your photos.{% endif %}</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">Data: Severo Silva et al. (2025), Dryad, <a href="https://doi.org/10.5061/dryad.2bvq83c20">doi:10.5061/dryad.2bvq83c20</a>.
+  Stage definitions paraphrased from Fehr &amp; Caviness (1977). Drawings are original illustrations.</div>
+</footer>
+
+<script>
+  const $ = s => document.querySelector(s);
+  const fill = v => { for (const k in v) { const el = document.getElementById(k); if (el) el.value = v[k]; } };
+  $('#ex-us').onclick = () => fill({planting_date:'2018-05-15', observation_date:'2018-07-20', latitude:'45.0', longitude:'-93.0', maturity_group:'1.5', nodes_per_plant:'8'});
+  $('#ex-ng').onclick = () => fill({planting_date:'2026-06-20', observation_date:'2026-08-25', latitude:'7.73', longitude:'8.52', maturity_group:'3', nodes_per_plant:'9'});
+  $('#btn-loc').onclick = () => {
+    if (!navigator.geolocation) { alert('Location is not available in this browser. Enter the coordinates by hand.'); return; }
+    navigator.geolocation.getCurrentPosition(
+      p => fill({latitude: p.coords.latitude.toFixed(4), longitude: p.coords.longitude.toFixed(4)}),
+      () => alert('Could not get your location. Enter the coordinates by hand.'));
+  };
+  $('#form').addEventListener('submit', () => { const b = $('#go'); b.disabled = true; b.textContent = 'Classifying...'; });
+
+  const setFilter = f => {
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.f === f));
+    document.querySelectorAll('.scard').forEach(c => c.classList.toggle('hide', f !== 'all' && c.dataset.group !== f));
+  };
+  document.querySelectorAll('.fbtn').forEach(b => b.onclick = () => setFilter(b.dataset.f));
+  document.querySelectorAll('[data-jump]').forEach(a => a.addEventListener('click', () => setFilter(a.dataset.jump)));
+
+  if (document.getElementById('result')) document.getElementById('result').scrollIntoView({behavior: 'smooth', block: 'start'});
+</script>
+</body>
+</html>

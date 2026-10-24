@@ -1,0 +1,104 @@
+{
+  "model": "Support Vector Machine (RBF kernel) with standardised inputs",
+  "task": "5-group soybean growth stage classification: Vegetative, Flowering, Pod, Seed, Maturity",
+  "features": [
+    "doy",
+    "dap",
+    "plant_doy",
+    "RM",
+    "nodes_per_plant",
+    "nodes_per_dap",
+    "latitude",
+    "longitude"
+  ],
+  "chosen_hyperparameters": {
+    "m__C": "1"
+  },
+  "trained_on": {
+    "rows": 8186,
+    "plots": 576,
+    "site_years": 11,
+    "source": "Severo Silva et al. (2025), Dryad, doi:10.5061/dryad.2bvq83c20"
+  },
+  "validation": "nested leave-one-site-year-out (outer) with GroupKFold(3) tuning (inner)",
+  "performance_unseen_sites": {
+    "accuracy": 0.779,
+    "macro_precision": 0.731,
+    "macro_recall": 0.714,
+    "macro_f1": 0.721,
+    "mcc": 0.705,
+    "majority_class_accuracy": 0.355
+  },
+  "per_class_unseen_sites": {
+    "Vegetative": {
+      "precision": 0.952,
+      "recall": 0.949,
+      "f1-score": 0.951,
+      "support": 2906
+    },
+    "Flowering": {
+      "precision": 0.599,
+      "recall": 0.598,
+      "f1-score": 0.599,
+      "support": 1291
+    },
+    "Pod": {
+      "precision": 0.507,
+      "recall": 0.531,
+      "f1-score": 0.519,
+      "support": 1272
+    },
+    "Seed": {
+      "precision": 0.822,
+      "recall": 0.838,
+      "f1-score": 0.83,
+      "support": 2146
+    },
+    "Maturity": {
+      "precision": 0.773,
+      "recall": 0.655,
+      "f1-score": 0.709,
+      "support": 571
+    }
+  },
+  "training_ranges": {
+    "doy": [
+      141.0,
+      312.0
+    ],
+    "dap": [
+      3.0,
+      159.0
+    ],
+    "plant_doy": [
+      121.0,
+      177.0
+    ],
+    "RM": [
+      0.2,
+      7.5
+    ],
+    "nodes_per_plant": [
+      0.0,
+      26.333
+    ],
+    "nodes_per_dap": [
+      0.0,
+      0.2751
+    ],
+    "latitude": [
+      36.0844,
+      44.99415
+    ],
+    "longitude": [
+      -94.17472,
+      -76.73465
+    ]
+  },
+  "caveats": [
+    "Trained only on US soybean trials (Arkansas, Minnesota, Ohio, Virginia, Wisconsin; 2017-2018).",
+    "Latitude/longitude are strong inputs; predictions outside the trained latitude/longitude range are extrapolation.",
+    "Predicts 5 stage groups, not individual Fehr stages (11-class accuracy was only about 49%).",
+    "No weather inputs; stage timing also depends on temperature, which is not modelled."
+  ]
+}
